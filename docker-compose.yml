@@ -1,0 +1,40 @@
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs
+      - DEFAULT_REGION=ap-northeast-1
+
+  producer:
+    build:
+        context: .
+        dockerfile: ./docker/Dockerfile
+        args:
+          - APP_NAME=producer
+    volumes:
+      - .:/app
+    depends_on:
+      localstack:
+        condition: service_healthy # localstackの準備ができるまで待つ
+    environment:
+      - AWS_REGION=ap-northeast-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+
+  consumer:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        - APP_NAME=consumer
+    volumes:
+      - .:/app
+    depends_on:
+      localstack:
+        condition: service_healthy # localstackの準備ができるまで待つ
+    environment:
+      - AWS_REGION=ap-northeast-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
